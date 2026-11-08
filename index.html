@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arquiteto de Back-end — Skill para Claude</title>
+<meta name="description" content="Skill para Claude que diagnostica sua operação, desenha a esteira de ofertas e escreve a copy pronta do pós-venda.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0f0f13;
+    --surface: #1a1a20;
+    --border: #2a2a33;
+    --text: #f4f0ea;
+    --muted: #a8a4ad;
+    --accent: #ff7a45;
+    --accent-soft: rgba(255, 122, 69, .14);
+    --red-soft: rgba(239, 98, 98, .14);
+    --red: #f08a8a;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* Topo */
+  .hero {
+    text-align: center;
+    padding: 120px 0 110px;
+    background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(255,122,69,.16), transparent 70%);
+    border-bottom: 1px solid var(--border);
+  }
+  .pill {
+    display: inline-block;
+    padding: 8px 18px;
+    border: 1px solid rgba(255,122,69,.5);
+    border-radius: 999px;
+    color: var(--accent);
+    font-size: 14px;
+    letter-spacing: .08em;
+    margin-bottom: 36px;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 7vw, 68px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    margin: 0 0 28px;
+  }
+  .hero p {
+    max-width: 760px;
+    margin: 0 auto 48px;
+    color: var(--muted);
+    font-size: clamp(18px, 2.2vw, 22px);
+    line-height: 1.7;
+  }
+  .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    padding: 18px 34px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 18px;
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary { background: var(--accent); color: #1a0d06; box-shadow: 0 10px 34px rgba(255,122,69,.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(255,122,69,.45); }
+  .btn-ghost { border: 1px solid var(--border); background: #131318; }
+  .btn-ghost:hover { border-color: #444; }
+  .btn:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* Seções */
+  section { padding: 90px 0; border-bottom: 1px solid var(--border); }
+  h2 { font-size: clamp(28px, 4vw, 36px); font-weight: 800; margin: 0 0 14px; letter-spacing: -.01em; }
+  .lead { color: var(--muted); max-width: 640px; margin: 0 0 48px; font-size: 18px; }
+
+  /* Regra número 1 */
+  .rule {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid rgba(255,122,69,.4);
+    border-radius: 18px;
+    padding: 36px 40px;
+  }
+  .rule-mark {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: grid; place-items: center;
+    font-size: 34px; font-weight: 800;
+  }
+  .rule h3 { margin: 0 0 8px; font-size: 22px; }
+  .rule p { margin: 0; color: var(--muted); }
+
+  /* Fases */
+  .phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .phase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px 26px;
+  }
+  .phase .n { color: var(--accent); font-weight: 700; font-size: 14px; letter-spacing: .04em; }
+  .phase h3 { font-size: 20px; margin: 12px 0 12px; line-height: 1.35; }
+  .phase p { color: var(--muted); margin: 0; font-size: 16px; }
+
+  /* Entregas */
+  .deliver { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .deliver div { background: var(--bg); padding: 26px 26px; }
+  .deliver strong { display: block; margin-bottom: 6px; font-size: 17px; }
+  .deliver span { color: var(--muted); font-size: 15px; }
+
+  /* Antes / Depois */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; }
+  .card.after { border-color: rgba(255,122,69,.45); }
+  .tag { display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
+  .before .tag { background: var(--red-soft); color: var(--red); }
+  .after .tag { background: var(--accent-soft); color: var(--accent); }
+  .card ul { margin: 0; padding-left: 20px; color: var(--muted); }
+  .card li { margin-bottom: 12px; }
+  .card li:last-child { margin-bottom: 0; }
+
+  /* Instalar */
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .steps li { display: grid; grid-template-columns: 52px 1fr; gap: 28px; padding: 28px 0; border-bottom: 1px solid var(--border); }
+  .steps li:last-child { border-bottom: 0; }
+  .num { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); display: grid; place-items: center; font-weight: 700; }
+  .steps h3 { margin: 6px 0 6px; font-size: 19px; }
+  .steps p { margin: 0; color: var(--muted); }
+  code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: .92em; color: var(--text); background: #22222a; padding: 2px 7px; border-radius: 6px; }
+
+  /* Usar */
+  .examples { display: grid; gap: 16px; }
+  .ex { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 12px; padding: 22px 26px; }
+  .ex b { color: var(--text); }
+  .ex i { color: var(--muted); }
+  .ex small { display: block; color: #85818b; margin-top: 6px; font-size: 14px; }
+
+  footer { padding: 48px 0 64px; text-align: center; color: #77737d; font-size: 14px; }
+
+  @media (max-width: 960px) {
+    .phases { grid-template-columns: 1fr 1fr; }
+    .deliver { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .hero { padding: 80px 0 72px; }
+    section { padding: 64px 0; }
+    .phases, .deliver, .compare { grid-template-columns: 1fr; }
+    .rule { grid-template-columns: 1fr; padding: 28px; text-align: left; }
+    .steps li { grid-template-columns: 44px 1fr; gap: 18px; }
+    .num { width: 42px; height: 42px; }
+    .btn { width: 100%; text-align: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="pill">SKILL PARA COWORK / CLAUDE</span>
+    <h1>Arquiteto de Back-end</h1>
+    <p>Diagnostica sua operação, desenha a esteira de ofertas e escreve a copy pronta do pós-venda — upsell, downsell, recuperação de vendas, e-mails, WhatsApp e calendário de campanhas — tudo a partir dos dados reais do seu negócio, dentro de uma única skill.</p>
+    <div class="buttons">
+      <a class="btn btn-primary" href="arquiteto-de-backend.skill" download>⬇ Baixar a skill</a>
+      <a class="btn btn-ghost" href="#instalar">Ver como instalar</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="rule">
+      <div class="rule-mark">1</div>
+      <div>
+        <h3>Nada de resposta genérica</h3>
+        <p>A skill sempre começa com um formulário rápido sobre o seu negócio. Ela só diagnostica e recomenda depois que você responde — porque o back-end certo de um curso de R$ 97 não é o mesmo de uma mentoria de R$ 5 mil.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>As 4 fases</h2>
+    <p class="lead">Cada fase usa o que saiu da anterior. O formulário do início é o que garante que tudo depois seja feito sob medida.</p>
+    <div class="phases">
+      <div class="phase">
+        <span class="n">FASE 1</span>
+        <h3>Formulário do Negócio</h3>
+        <p>Nicho, produto, ticket, tipo de funil, fonte de tráfego, o que já existe no back-end, outros produtos, volume de vendas, canais e objetivo.</p>
+      </div>
+      <div class="phase">
+        <span class="n">FASE 2</span>
+        <h3>Diagnóstico + Plano</h3>
+        <p>Identifica o estágio da operação e o maior gargalo, e entrega um plano priorizado — incluindo o upsell recomendado, o preço para testar e o downsell.</p>
+      </div>
+      <div class="phase">
+        <span class="n">FASE 3</span>
+        <h3>Mapa da Esteira</h3>
+        <p>Desenha a ascensão do cliente: o que oferecer depois da primeira compra, em que ordem, em qual momento e por qual canal.</p>
+      </div>
+      <div class="phase">
+        <span class="n">FASE 4</span>
+        <h3>Copy + Calendário</h3>
+        <p>Escreve a copy pronta para usar e monta o calendário de 13 semanas da base, alternando semanas de venda com semanas de valor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>O que ela escreve pra você</h2>
+    <p class="lead">Copy pronta para colar na plataforma, no e-mail ou no grupo — sempre adaptada ao formulário.</p>
+    <div class="deliver">
+      <div><strong>Upsell e downsell</strong><span>Página e roteiro de vídeo, nos 5 tipos de upsell</span></div>
+      <div><strong>Order bump e pré-bump</strong><span>Oferta e texto do checkout</span></div>
+      <div><strong>Recuperação de vendas</strong><span>Carrinho abandonado, Pix e cartão recusado</span></div>
+      <div><strong>E-mails para a base</strong><span>Onboarding, nutrição e campanhas</span></div>
+      <div><strong>WhatsApp e quiz</strong><span>Mensagens para grupos e funis de quiz</span></div>
+      <div><strong>Campanhas sazonais</strong><span>Flash sales, Black Friday e datas do ano</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>O que muda na prática</h2>
+    <p class="lead">Antes, back-end era um upsell solto colado depois do checkout. Agora é um sistema que continua vendendo para quem já comprou.</p>
+    <div class="compare">
+      <div class="card before">
+        <span class="tag">ANTES</span>
+        <ul>
+          <li>Um upsell qualquer, sem saber se combina com o produto</li>
+          <li>Dicas genéricas que servem pra todo mundo e pra ninguém</li>
+          <li>Base de compradores parada depois da primeira venda</li>
+          <li>Copy com escassez falsa que vira reembolso e chargeback</li>
+        </ul>
+      </div>
+      <div class="card after">
+        <span class="tag">DEPOIS</span>
+        <ul>
+          <li>Diagnóstico feito em cima dos números reais do seu negócio</li>
+          <li>Esteira completa: não só o upsell, mas toda a ascensão do cliente</li>
+          <li>Calendário de 13 semanas pra monetizar a base sem cansar</li>
+          <li>Ofertas com escassez real e sempre um caminho de saída</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="instalar">
+  <div class="wrap">
+    <h2>Como instalar</h2>
+    <p class="lead">Leva menos de um minuto, sem precisar saber nada técnico.</p>
+    <ol class="steps">
+      <li>
+        <span class="num">1</span>
+        <div>
+          <h3>Baixe o arquivo da skill</h3>
+          <p>Clique no botão “Baixar a skill” no topo desta página. Um arquivo <code>arquiteto-de-backend.skill</code> vai pro seu computador.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <div>
+          <h3>Abra o Claude ou o Cowork</h3>
+          <p>Envie o arquivo baixado numa conversa (arraste pro chat, como se fosse mandar qualquer outro arquivo).</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <div>
+          <h3>Clique em “Save skill”</h3>
+          <p>Vai aparecer um cartão com o botão de instalar. A skill fica salva na sua conta — funciona em qualquer conversa nova a partir daí.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">4</span>
+        <div>
+          <h3>Pronto</h3>
+          <p>Da próxima vez que você falar de back-end, upsell, esteira de produtos, recuperação de vendas ou campanha pra base, a skill entra em ação sozinha.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Como usar</h2>
+    <p class="lead">Alguns exemplos de como puxar cada fase — não precisa decorar comando nenhum, é só descrever o que você quer.</p>
+    <div class="examples">
+      <div class="ex"><b>Fase 1 —</b> <i>“Quero montar o back-end do meu curso de confeitaria.”</i><small>A skill responde com o formulário. Você preenche tudo numa mensagem só.</small></div>
+      <div class="ex"><b>Fase 2 —</b> <i>“Pronto, respondi. Me entrega o diagnóstico e o upsell recomendado.”</i></div>
+      <div class="ex"><b>Fase 3 —</b> <i>“Agora monta o mapa da esteira de ofertas desse produto.”</i></div>
+      <div class="ex"><b>Fase 4 —</b> <i>“Escreve a copy do upsell, a recuperação de Pix e o calendário de 13 semanas da base.”</i></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Arquiteto de Back-end · Skill para Claude</div>
+</footer>
+
+</body>
+</html>
